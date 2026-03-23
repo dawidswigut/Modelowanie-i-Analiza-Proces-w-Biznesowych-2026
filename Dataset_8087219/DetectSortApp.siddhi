@@ -1,0 +1,110 @@
+@App:name('DetectSortApp')
+
+@source(type = 'mqtt', url = 'tcp://localhost:1883', client.id = 'mqtt.SM_1.Sort', topic = 'FTFactory/SM_1', username = 'user', password = 'mqtt',
+ @map(type = 'json'))
+define stream SM_1Stream(station string, timestamp string, i1_light_barrier int, i2_color_sensor int, i3_light_barrier int, i6_light_barrier int, i7_light_barrier int, i8_light_barrier int, m1_speed int, o5_valve int, o6_valve int, o7_valve int, o8_compressor int);
+
+define table EventMemoryTable (name string, next_pattern string, activity string, timestamp string);
+
+@sink(type = 'log', prefix='Activity Log', priority='INFO')
+@sink(type = 'mqtt', url = 'tcp://localhost:1883', client.id = 'mqtt.SM_1.Sort.ll',topic = 'ActivityEvents/LowLevel', username = 'user', password = 'mqtt', @map(type='json'))
+define Stream DetectedLowLevelActivityEvents(event string, activity string, originalts string);
+
+@sink(type = 'log', prefix='Activity Log', priority='INFO')
+@sink(type = 'mqtt', url = 'tcp://localhost:1883', client.id = 'mqtt.SM_1.Sort.hl',topic = 'ActivityEvents/HighLevel', username = 'user', password = 'mqtt', @map(type='json'))
+define Stream DetectedHighLevelActivityEvents(event string, activity string, timestamp string);
+
+@info(name="Detect-LowLevel-Pattern-1")
+from every e1 = SM_1Stream, e2 = SM_1Stream[(e1.m1_speed==0 and e2.m1_speed==-512)]
+select "LowLevel-Pattern-1" as event, "Sort" as activity, "2023-03-20T10:12:08Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-1")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-1"]
+select "HighLevel-Pattern-1" as event, "Sort" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-1-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"]
+select "HighLevel-Pattern-1" as name, "LowLevel-Pattern-2" as next_pattern, "Sort" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-2")
+from every e1 = SM_1Stream, e2 = SM_1Stream[(e1.i1_light_barrier==0 and e2.i1_light_barrier==1)]
+select "LowLevel-Pattern-2" as event, "Sort" as activity, "2023-03-20T10:12:10Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-2")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-2"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-2" as event, "Sort" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-2-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-2"]
+select "HighLevel-Pattern-2" as name, "LowLevel-Pattern-3" as next_pattern, "Sort" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-3")
+from every e1 = SM_1Stream, e2 = SM_1Stream[(e1.i3_light_barrier==1 and e2.i3_light_barrier==0)]
+select "LowLevel-Pattern-3" as event, "Sort" as activity, "2023-03-20T10:12:21Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-3")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-3"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-3" as event, "Sort" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-3-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-3"]
+select "HighLevel-Pattern-3" as name, "LowLevel-Pattern-4" as next_pattern, "Sort" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-4")
+from every e1 = SM_1Stream, e2 = SM_1Stream[(e1.i3_light_barrier==0 and e2.i3_light_barrier==1)]
+select "LowLevel-Pattern-4" as event, "Sort" as activity, "2023-03-20T10:12:23Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-4")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-4"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-4" as event, "Sort" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-4-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-4"]
+select "HighLevel-Pattern-4" as name, "LowLevel-Pattern-5" as next_pattern, "Sort" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-5")
+from every e1 = SM_1Stream, e2 = SM_1Stream[(e1.m1_speed==-512 and e2.m1_speed==0) and (e1.o6_valve==0 and e2.o6_valve==512) and (e1.o8_compressor==0 and e2.o8_compressor==512)]
+select "LowLevel-Pattern-5" as event, "Sort" as activity, "2023-03-20T10:12:27Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-5")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-5"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-5" as event, "Sort" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-5-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-5"]
+select "HighLevel-Pattern-5" as name, "LowLevel-Pattern-6" as next_pattern, "Sort" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-6")
+from every e1 = SM_1Stream, e2 = SM_1Stream[(e1.i7_light_barrier==1 and e2.i7_light_barrier==0) and (e1.o6_valve==512 and e2.o6_valve==0) and (e1.o8_compressor==512 and e2.o8_compressor==0)]
+select "LowLevel-Pattern-6" as event, "Sort" as activity, "2023-03-20T10:12:29Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-6")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-6"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-6" as event, "Sort" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="DeleteTableActivityInstance")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-6"]
+delete EventMemoryTable
+	on EventMemoryTable.activity == "Sort"

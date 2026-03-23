@@ -1,0 +1,62 @@
+@App:name('DetectMillApp')
+
+@source(type = 'mqtt', url = 'tcp://localhost:1883', client.id = 'mqtt.MM_1.Mill', topic = 'FTFactory/MM_1', username = 'user', password = 'mqtt',
+ @map(type = 'json'))
+define stream MM_1Stream(station string, timestamp string, i1_pos_switch int, i2_pos_switch int, i3_pos_switch int, i4_light_barrier int, m1_speed int, m2_speed int, m3_speed int, o7_valve int, o8_compressor int);
+
+define table EventMemoryTable (name string, next_pattern string, activity string, timestamp string);
+
+@sink(type = 'log', prefix='Activity Log', priority='INFO')
+@sink(type = 'mqtt', url = 'tcp://localhost:1883', client.id = 'mqtt.MM_1.Mill.ll',topic = 'ActivityEvents/LowLevel', username = 'user', password = 'mqtt', @map(type='json'))
+define Stream DetectedLowLevelActivityEvents(event string, activity string, originalts string);
+
+@sink(type = 'log', prefix='Activity Log', priority='INFO')
+@sink(type = 'mqtt', url = 'tcp://localhost:1883', client.id = 'mqtt.MM_1.Mill.hl',topic = 'ActivityEvents/HighLevel', username = 'user', password = 'mqtt', @map(type='json'))
+define Stream DetectedHighLevelActivityEvents(event string, activity string, timestamp string);
+
+@info(name="Detect-LowLevel-Pattern-1")
+from every e1 = MM_1Stream, e2 = MM_1Stream[(e1.o8_compressor==512 and e2.o8_compressor==0)]
+select "LowLevel-Pattern-1" as event, "Mill" as activity, "2023-03-20T10:34:31Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-1")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-1"]
+select "HighLevel-Pattern-1" as event, "Mill" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-1-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"]
+select "HighLevel-Pattern-1" as name, "LowLevel-Pattern-2" as next_pattern, "Mill" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-2")
+from every e1 = MM_1Stream, e2 = MM_1Stream[(e1.o8_compressor==0 and e2.o8_compressor==512)]
+select "LowLevel-Pattern-2" as event, "Mill" as activity, "2023-03-20T10:34:39Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-2")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-2"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-2" as event, "Mill" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-2-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-2"]
+select "HighLevel-Pattern-2" as name, "LowLevel-Pattern-3" as next_pattern, "Mill" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-3")
+from every e1 = MM_1Stream, e2 = MM_1Stream[(e1.o8_compressor==512 and e2.o8_compressor==0)]
+select "LowLevel-Pattern-3" as event, "Mill" as activity, "2023-03-20T10:34:48Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-3")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-3"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-3" as event, "Mill" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="DeleteTableActivityInstance")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-3"]
+delete EventMemoryTable
+	on EventMemoryTable.activity == "Mill"

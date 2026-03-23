@@ -1,0 +1,94 @@
+@App:name('DetectTransportApp')
+
+@source(type = 'mqtt', url = 'tcp://localhost:1883', client.id = 'mqtt.WT_1.Transport', topic = 'FTFactory/WT_1', username = 'user', password = 'mqtt',
+ @map(type = 'json'))
+define stream WT_1Stream(station string, timestamp string, i3_pos_switch int, i4_pos_switch int, m2_speed int, o5_valve int, o6_valve int, o8_compressor int);
+
+define table EventMemoryTable (name string, next_pattern string, activity string, timestamp string);
+
+@sink(type = 'log', prefix='Activity Log', priority='INFO')
+@sink(type = 'mqtt', url = 'tcp://localhost:1883', client.id = 'mqtt.WT_1.Transport.ll',topic = 'ActivityEvents/LowLevel', username = 'user', password = 'mqtt', @map(type='json'))
+define Stream DetectedLowLevelActivityEvents(event string, activity string, originalts string);
+
+@sink(type = 'log', prefix='Activity Log', priority='INFO')
+@sink(type = 'mqtt', url = 'tcp://localhost:1883', client.id = 'mqtt.WT_1.Transport.hl',topic = 'ActivityEvents/HighLevel', username = 'user', password = 'mqtt', @map(type='json'))
+define Stream DetectedHighLevelActivityEvents(event string, activity string, timestamp string);
+
+@info(name="Detect-LowLevel-Pattern-1")
+from every e1 = WT_1Stream, e2 = WT_1Stream[(e1.m2_speed==0 and e2.m2_speed==-512)]
+select "LowLevel-Pattern-1" as event, "Transport" as activity, "2023-03-20T10:57:09Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-1")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-1"]
+select "HighLevel-Pattern-1" as event, "Transport" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-1-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"]
+select "HighLevel-Pattern-1" as name, "LowLevel-Pattern-2" as next_pattern, "Transport" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-2")
+from every e1 = WT_1Stream, e2 = WT_1Stream[(e1.i3_pos_switch==0 and e2.i3_pos_switch==1) and (e1.m2_speed==-512 and e2.m2_speed==0)]
+select "LowLevel-Pattern-2" as event, "Transport" as activity, "2023-03-20T10:57:19Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-2")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-2"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-2" as event, "Transport" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-2-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-2"]
+select "HighLevel-Pattern-2" as name, "LowLevel-Pattern-3" as next_pattern, "Transport" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-3")
+from every e1 = WT_1Stream, e2 = WT_1Stream[(e1.o5_valve==0 and e2.o5_valve==512) and (e1.o6_valve==0 and e2.o6_valve==512)]
+select "LowLevel-Pattern-3" as event, "Transport" as activity, "2023-03-20T10:57:23Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-3")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-3"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-3" as event, "Transport" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-3-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-3"]
+select "HighLevel-Pattern-3" as name, "LowLevel-Pattern-4" as next_pattern, "Transport" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-4")
+from every e1 = WT_1Stream, e2 = WT_1Stream[(e1.i3_pos_switch==1 and e2.i3_pos_switch==0) and (e1.m2_speed==0 and e2.m2_speed==512) and (e1.o6_valve==512 and e2.o6_valve==0)]
+select "LowLevel-Pattern-4" as event, "Transport" as activity, "2023-03-20T10:57:25Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-4")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-4"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-4" as event, "Transport" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-4-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-4"]
+select "HighLevel-Pattern-4" as name, "LowLevel-Pattern-5" as next_pattern, "Transport" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-5")
+from every e1 = WT_1Stream, e2 = WT_1Stream[(e1.m2_speed==512 and e2.m2_speed==0) and (e1.o5_valve==512 and e2.o5_valve==0)]
+select "LowLevel-Pattern-5" as event, "Transport" as activity, "2023-03-20T10:57:39Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-5")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-5"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-5" as event, "Transport" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="DeleteTableActivityInstance")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-5"]
+delete EventMemoryTable
+	on EventMemoryTable.activity == "Transport"

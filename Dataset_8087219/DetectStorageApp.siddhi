@@ -1,0 +1,382 @@
+@App:name('DetectStorageApp')
+
+@source(type = 'mqtt', url = 'tcp://localhost:1883', client.id = 'mqtt.HBW_1.Storage', topic = 'FTFactory/HBW_1', username = 'user', password = 'mqtt',
+ @map(type = 'json'))
+define stream HBW_1Stream(station string, timestamp string, i1_light_barrier int, i2_light_barrier int, i3_light_barrier int, i4_light_barrier int, i5_pos_switch int, i6_pos_switch int, i7_pos_switch int, i8_pos_switch int, m1_speed int, m2_speed int, m3_speed int, m4_speed int);
+
+define table EventMemoryTable (name string, next_pattern string, activity string, timestamp string);
+
+@sink(type = 'log', prefix='Activity Log', priority='INFO')
+@sink(type = 'mqtt', url = 'tcp://localhost:1883', client.id = 'mqtt.HBW_1.Storage.ll',topic = 'ActivityEvents/LowLevel', username = 'user', password = 'mqtt', @map(type='json'))
+define Stream DetectedLowLevelActivityEvents(event string, activity string, originalts string);
+
+@sink(type = 'log', prefix='Activity Log', priority='INFO')
+@sink(type = 'mqtt', url = 'tcp://localhost:1883', client.id = 'mqtt.HBW_1.Storage.hl',topic = 'ActivityEvents/HighLevel', username = 'user', password = 'mqtt', @map(type='json'))
+define Stream DetectedHighLevelActivityEvents(event string, activity string, timestamp string);
+
+@info(name="Detect-LowLevel-Pattern-1")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i5_pos_switch==1 and e2.i5_pos_switch==0) and (e1.m2_speed==0 and e2.m2_speed==-512)]
+select "LowLevel-Pattern-1" as event, "Storage" as activity, "2023-03-20T10:30:30Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-1")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-1"]
+select "HighLevel-Pattern-1" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-1-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"]
+select "HighLevel-Pattern-1" as name, "LowLevel-Pattern-2" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-2")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i8_pos_switch==1 and e2.i8_pos_switch==0) and (e1.m2_speed==-512 and e2.m2_speed==0) and (e1.m4_speed==0 and e2.m4_speed==-512)]
+select "LowLevel-Pattern-2" as event, "Storage" as activity, "2023-03-20T10:30:40Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-2")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-2"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-2" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-2-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-2"]
+select "HighLevel-Pattern-2" as name, "LowLevel-Pattern-3" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-3")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i6_pos_switch==1 and e2.i6_pos_switch==0) and (e1.m3_speed==0 and e2.m3_speed==-512) and (e1.m4_speed==-512 and e2.m4_speed==0)]
+select "LowLevel-Pattern-3" as event, "Storage" as activity, "2023-03-20T10:30:42Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-3")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-3"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-3" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-3-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-3"]
+select "HighLevel-Pattern-3" as name, "LowLevel-Pattern-4" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-4")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i7_pos_switch==0 and e2.i7_pos_switch==1) and (e1.m3_speed==-512 and e2.m3_speed==0) and (e1.m4_speed==0 and e2.m4_speed==512)]
+select "LowLevel-Pattern-4" as event, "Storage" as activity, "2023-03-20T10:30:47Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-4")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-4"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-4" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-4-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-4"]
+select "HighLevel-Pattern-4" as name, "LowLevel-Pattern-5" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-5")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i7_pos_switch==1 and e2.i7_pos_switch==0) and (e1.i8_pos_switch==0 and e2.i8_pos_switch==1) and (e1.m3_speed==0 and e2.m3_speed==512) and (e1.m4_speed==512 and e2.m4_speed==0)]
+select "LowLevel-Pattern-5" as event, "Storage" as activity, "2023-03-20T10:30:49Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-5")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-5"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-5" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-5-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-5"]
+select "HighLevel-Pattern-5" as name, "LowLevel-Pattern-6" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-6")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i6_pos_switch==0 and e2.i6_pos_switch==1) and (e1.m2_speed==0 and e2.m2_speed==512) and (e1.m3_speed==512 and e2.m3_speed==0)]
+select "LowLevel-Pattern-6" as event, "Storage" as activity, "2023-03-20T10:30:53Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-6")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-6"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-6" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-6-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-6"]
+select "HighLevel-Pattern-6" as name, "LowLevel-Pattern-7" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-7")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i5_pos_switch==0 and e2.i5_pos_switch==1) and (e1.i8_pos_switch==1 and e2.i8_pos_switch==0) and (e1.m2_speed==512 and e2.m2_speed==0) and (e1.m4_speed==0 and e2.m4_speed==-512)]
+select "LowLevel-Pattern-7" as event, "Storage" as activity, "2023-03-20T10:31:03Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-7")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-7"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-7" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-7-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-7"]
+select "HighLevel-Pattern-7" as name, "LowLevel-Pattern-8" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-8")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i6_pos_switch==1 and e2.i6_pos_switch==0) and (e1.m3_speed==0 and e2.m3_speed==-512) and (e1.m4_speed==-512 and e2.m4_speed==0)]
+select "LowLevel-Pattern-8" as event, "Storage" as activity, "2023-03-20T10:31:07Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-8")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-8"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-8" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-8-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-8"]
+select "HighLevel-Pattern-8" as name, "LowLevel-Pattern-9" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-9")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i4_light_barrier==1 and e2.i4_light_barrier==0)]
+select "LowLevel-Pattern-9" as event, "Storage" as activity, "2023-03-20T10:31:09Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-9")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-9"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-9" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-9-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-9"]
+select "HighLevel-Pattern-9" as name, "LowLevel-Pattern-10" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-10")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i7_pos_switch==0 and e2.i7_pos_switch==1) and (e1.m3_speed==-512 and e2.m3_speed==0) and (e1.m4_speed==0 and e2.m4_speed==-512)]
+select "LowLevel-Pattern-10" as event, "Storage" as activity, "2023-03-20T10:31:11Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-10")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-10"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-10" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-10-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-10"]
+select "HighLevel-Pattern-10" as name, "LowLevel-Pattern-11" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-11")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i7_pos_switch==1 and e2.i7_pos_switch==0) and (e1.m3_speed==0 and e2.m3_speed==512) and (e1.m4_speed==-512 and e2.m4_speed==0)]
+select "LowLevel-Pattern-11" as event, "Storage" as activity, "2023-03-20T10:31:13Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-11")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-11"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-11" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-11-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-11"]
+select "HighLevel-Pattern-11" as name, "LowLevel-Pattern-12" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-12")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i6_pos_switch==0 and e2.i6_pos_switch==1) and (e1.m1_speed==0 and e2.m1_speed==-512) and (e1.m3_speed==512 and e2.m3_speed==0)]
+select "LowLevel-Pattern-12" as event, "Storage" as activity, "2023-03-20T10:31:17Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-12")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-12"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-12" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-12-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-12"]
+select "HighLevel-Pattern-12" as name, "LowLevel-Pattern-13" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-13")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i1_light_barrier==1 and e2.i1_light_barrier==0) and (e1.i4_light_barrier==0 and e2.i4_light_barrier==1) and (e1.m1_speed==-512 and e2.m1_speed==0)]
+select "LowLevel-Pattern-13" as event, "Storage" as activity, "2023-03-20T10:31:19Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-13")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-13"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-13" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-13-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-13"]
+select "HighLevel-Pattern-13" as name, "LowLevel-Pattern-14" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-14")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i6_pos_switch==1 and e2.i6_pos_switch==0) and (e1.m3_speed==0 and e2.m3_speed==-512)]
+select "LowLevel-Pattern-14" as event, "Storage" as activity, "2023-03-20T10:31:23Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-14")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-14"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-14" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-14-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-14"]
+select "HighLevel-Pattern-14" as name, "LowLevel-Pattern-15" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-15")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i1_light_barrier==0 and e2.i1_light_barrier==1) and (e1.i4_light_barrier==1 and e2.i4_light_barrier==0) and (e1.i7_pos_switch==0 and e2.i7_pos_switch==1) and (e1.m3_speed==-512 and e2.m3_speed==0) and (e1.m4_speed==0 and e2.m4_speed==512)]
+select "LowLevel-Pattern-15" as event, "Storage" as activity, "2023-03-20T10:31:29Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-15")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-15"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-15" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-15-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-15"]
+select "HighLevel-Pattern-15" as name, "LowLevel-Pattern-16" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-16")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i7_pos_switch==1 and e2.i7_pos_switch==0) and (e1.m3_speed==0 and e2.m3_speed==512) and (e1.m4_speed==512 and e2.m4_speed==0)]
+select "LowLevel-Pattern-16" as event, "Storage" as activity, "2023-03-20T10:31:31Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-16")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-16"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-16" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-16-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-16"]
+select "HighLevel-Pattern-16" as name, "LowLevel-Pattern-17" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-17")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i4_light_barrier==0 and e2.i4_light_barrier==1)]
+select "LowLevel-Pattern-17" as event, "Storage" as activity, "2023-03-20T10:31:33Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-17")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-17"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-17" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-17-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-17"]
+select "HighLevel-Pattern-17" as name, "LowLevel-Pattern-18" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-18")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i6_pos_switch==0 and e2.i6_pos_switch==1) and (e1.m3_speed==512 and e2.m3_speed==0) and (e1.m4_speed==0 and e2.m4_speed==512)]
+select "LowLevel-Pattern-18" as event, "Storage" as activity, "2023-03-20T10:31:35Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-18")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-18"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-18" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-18-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-18"]
+select "HighLevel-Pattern-18" as name, "LowLevel-Pattern-19" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-19")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i5_pos_switch==1 and e2.i5_pos_switch==0) and (e1.i8_pos_switch==0 and e2.i8_pos_switch==1) and (e1.m2_speed==0 and e2.m2_speed==-512) and (e1.m4_speed==512 and e2.m4_speed==0)]
+select "LowLevel-Pattern-19" as event, "Storage" as activity, "2023-03-20T10:31:41Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-19")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-19"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-19" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-19-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-19"]
+select "HighLevel-Pattern-19" as name, "LowLevel-Pattern-20" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-20")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i6_pos_switch==1 and e2.i6_pos_switch==0) and (e1.i8_pos_switch==1 and e2.i8_pos_switch==0) and (e1.m2_speed==-512 and e2.m2_speed==0) and (e1.m3_speed==0 and e2.m3_speed==-512)]
+select "LowLevel-Pattern-20" as event, "Storage" as activity, "2023-03-20T10:31:51Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-20")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-20"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-20" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-20-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-20"]
+select "HighLevel-Pattern-20" as name, "LowLevel-Pattern-21" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-21")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i7_pos_switch==0 and e2.i7_pos_switch==1) and (e1.m3_speed==-512 and e2.m3_speed==0) and (e1.m4_speed==0 and e2.m4_speed==-512)]
+select "LowLevel-Pattern-21" as event, "Storage" as activity, "2023-03-20T10:31:55Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-21")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-21"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-21" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-21-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-21"]
+select "HighLevel-Pattern-21" as name, "LowLevel-Pattern-22" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-22")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i7_pos_switch==1 and e2.i7_pos_switch==0) and (e1.m3_speed==0 and e2.m3_speed==512) and (e1.m4_speed==-512 and e2.m4_speed==0)]
+select "LowLevel-Pattern-22" as event, "Storage" as activity, "2023-03-20T10:31:57Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-22")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-22"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-22" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-22-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-22"]
+select "HighLevel-Pattern-22" as name, "LowLevel-Pattern-23" as next_pattern, "Storage" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-23")
+from every e1 = HBW_1Stream, e2 = HBW_1Stream[(e1.i6_pos_switch==0 and e2.i6_pos_switch==1) and (e1.m3_speed==512 and e2.m3_speed==0)]
+select "LowLevel-Pattern-23" as event, "Storage" as activity, "2023-03-20T10:32:01Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-23")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-23"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-23" as event, "Storage" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="DeleteTableActivityInstance")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-23"]
+delete EventMemoryTable
+	on EventMemoryTable.activity == "Storage"

@@ -1,0 +1,190 @@
+@App:name('DetectPickup-move-ovenApp')
+
+@source(type = 'mqtt', url = 'tcp://localhost:1883', client.id = 'mqtt.VGR_1.Pickup-move-oven', topic = 'FTFactory/VGR_1', username = 'user', password = 'mqtt',
+ @map(type = 'json'))
+define stream VGR_1Stream(station string, timestamp string, i1_pos_switch int, i2_pos_switch int, i3_pos_switch int, i7_light_barrier int, i4_light_barrier int, i8_color_sensor int, o7_compressor_level int, o8_valve_open int, m1_speed int, m2_speed int, m3_speed int);
+
+define table EventMemoryTable (name string, next_pattern string, activity string, timestamp string);
+
+@sink(type = 'log', prefix='Activity Log', priority='INFO')
+@sink(type = 'mqtt', url = 'tcp://localhost:1883', client.id = 'mqtt.VGR_1.Pickup-move-oven.ll',topic = 'ActivityEvents/LowLevel', username = 'user', password = 'mqtt', @map(type='json'))
+define Stream DetectedLowLevelActivityEvents(event string, activity string, originalts string);
+
+@sink(type = 'log', prefix='Activity Log', priority='INFO')
+@sink(type = 'mqtt', url = 'tcp://localhost:1883', client.id = 'mqtt.VGR_1.Pickup-move-oven.hl',topic = 'ActivityEvents/HighLevel', username = 'user', password = 'mqtt', @map(type='json'))
+define Stream DetectedHighLevelActivityEvents(event string, activity string, timestamp string);
+
+@info(name="Detect-LowLevel-Pattern-1")
+from every e1 = VGR_1Stream, e2 = VGR_1Stream[(e1.i2_pos_switch==0 and e2.i2_pos_switch==1) and (e1.m3_speed==0 and e2.m3_speed==512)]
+select "LowLevel-Pattern-1" as event, "Pickup-move-oven" as activity, "2023-03-20T11:08:04Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-1")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-1"]
+select "HighLevel-Pattern-1" as event, "Pickup-move-oven" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-1-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"]
+select "HighLevel-Pattern-1" as name, "LowLevel-Pattern-2" as next_pattern, "Pickup-move-oven" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-2")
+from every e1 = VGR_1Stream, e2 = VGR_1Stream[(e1.m3_speed==512 and e2.m3_speed==-512)]
+select "LowLevel-Pattern-2" as event, "Pickup-move-oven" as activity, "2023-03-20T11:08:06Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-2")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-2"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-2" as event, "Pickup-move-oven" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-2-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-2"]
+select "HighLevel-Pattern-2" as name, "LowLevel-Pattern-3" as next_pattern, "Pickup-move-oven" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-3")
+from every e1 = VGR_1Stream, e2 = VGR_1Stream[(e1.i2_pos_switch==1 and e2.i2_pos_switch==0) and (e1.m2_speed==0 and e2.m2_speed==-512) and (e1.m3_speed==-512 and e2.m3_speed==0)]
+select "LowLevel-Pattern-3" as event, "Pickup-move-oven" as activity, "2023-03-20T11:08:08Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-3")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-3"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-3" as event, "Pickup-move-oven" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-3-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-3"]
+select "HighLevel-Pattern-3" as name, "LowLevel-Pattern-4" as next_pattern, "Pickup-move-oven" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-4")
+from every e1 = VGR_1Stream, e2 = VGR_1Stream[(e1.m2_speed==-512 and e2.m2_speed==512) and (e1.o7_compressor==0 and e2.o7_compressor==512)]
+select "LowLevel-Pattern-4" as event, "Pickup-move-oven" as activity, "2023-03-20T11:08:10Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-4")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-4"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-4" as event, "Pickup-move-oven" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-4-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-4"]
+select "HighLevel-Pattern-4" as name, "LowLevel-Pattern-5" as next_pattern, "Pickup-move-oven" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-5")
+from every e1 = VGR_1Stream, e2 = VGR_1Stream[(e1.i2_pos_switch==0 and e2.i2_pos_switch==1) and (e1.i3_pos_switch==0 and e2.i3_pos_switch==1) and (e1.m2_speed==512 and e2.m2_speed==0)]
+select "LowLevel-Pattern-5" as event, "Pickup-move-oven" as activity, "2023-03-20T11:08:12Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-5")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-5"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-5" as event, "Pickup-move-oven" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-5-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-5"]
+select "HighLevel-Pattern-5" as name, "LowLevel-Pattern-6" as next_pattern, "Pickup-move-oven" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-6")
+from every e1 = VGR_1Stream, e2 = VGR_1Stream[(e1.m1_speed==0 and e2.m1_speed==512)]
+select "LowLevel-Pattern-6" as event, "Pickup-move-oven" as activity, "2023-03-20T11:08:14Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-6")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-6"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-6" as event, "Pickup-move-oven" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-6-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-6"]
+select "HighLevel-Pattern-6" as name, "LowLevel-Pattern-7" as next_pattern, "Pickup-move-oven" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-7")
+from every e1 = VGR_1Stream, e2 = VGR_1Stream[(e1.i3_pos_switch==1 and e2.i3_pos_switch==0) and (e1.m1_speed==512 and e2.m1_speed==0) and (e1.m3_speed==0 and e2.m3_speed==-512)]
+select "LowLevel-Pattern-7" as event, "Pickup-move-oven" as activity, "2023-03-20T11:08:16Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-7")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-7"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-7" as event, "Pickup-move-oven" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-7-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-7"]
+select "HighLevel-Pattern-7" as name, "LowLevel-Pattern-8" as next_pattern, "Pickup-move-oven" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-8")
+from every e1 = VGR_1Stream, e2 = VGR_1Stream[(e1.i2_pos_switch==1 and e2.i2_pos_switch==0) and (e1.m2_speed==0 and e2.m2_speed==-512) and (e1.m3_speed==-512 and e2.m3_speed==0)]
+select "LowLevel-Pattern-8" as event, "Pickup-move-oven" as activity, "2023-03-20T11:08:22Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-8")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-8"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-8" as event, "Pickup-move-oven" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-8-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-8"]
+select "HighLevel-Pattern-8" as name, "LowLevel-Pattern-9" as next_pattern, "Pickup-move-oven" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-9")
+from every e1 = VGR_1Stream, e2 = VGR_1Stream[(e1.m2_speed==-512 and e2.m2_speed==512) and (e1.o7_compressor==512 and e2.o7_compressor==0)]
+select "LowLevel-Pattern-9" as event, "Pickup-move-oven" as activity, "2023-03-20T11:08:26Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-9")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-9"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-9" as event, "Pickup-move-oven" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-9-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-9"]
+select "HighLevel-Pattern-9" as name, "LowLevel-Pattern-10" as next_pattern, "Pickup-move-oven" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-10")
+from every e1 = VGR_1Stream, e2 = VGR_1Stream[(e1.i2_pos_switch==0 and e2.i2_pos_switch==1) and (e1.m2_speed==512 and e2.m2_speed==0) and (e1.m3_speed==0 and e2.m3_speed==512)]
+select "LowLevel-Pattern-10" as event, "Pickup-move-oven" as activity, "2023-03-20T11:08:30Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-10")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-10"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-10" as event, "Pickup-move-oven" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="HighLevel-Pattern-10-to-Table")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-10"]
+select "HighLevel-Pattern-10" as name, "LowLevel-Pattern-11" as next_pattern, "Pickup-move-oven" as activity, timestamp
+insert into EventMemoryTable;
+
+@info(name="Detect-LowLevel-Pattern-11")
+from every e1 = VGR_1Stream, e2 = VGR_1Stream[(e1.i3_pos_switch==0 and e2.i3_pos_switch==1) and (e1.m1_speed==0 and e2.m1_speed==512) and (e1.m3_speed==512 and e2.m3_speed==0)]
+select "LowLevel-Pattern-11" as event, "Pickup-move-oven" as activity, "2023-03-20T11:08:36Z" as originalts
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-11")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-11"]
+	join EventMemoryTable on EventMemoryTable.next_pattern == DetectedLowLevelActivityEvents.event
+select "HighLevel-Pattern-11" as event, "Pickup-move-oven" as activity, originalts as timestamp
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="DeleteTableActivityInstance")
+from DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-11"]
+delete EventMemoryTable
+	on EventMemoryTable.activity == "Pickup-move-oven"

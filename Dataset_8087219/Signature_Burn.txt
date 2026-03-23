@@ -1,0 +1,13 @@
+{"station": "OV_1", "timestamp": "2023-03-20T10:11:01Z", "events": {"i1_pos_switch": 0, "i2_pos_switch": 0, "i5_light_barrier": 1, "m1_speed": 0, "o7_valve": 0, "o8_compressor": 0}}
+{"station": "OV_1", "timestamp": "2023-03-20T10:11:03Z", "events": {"i1_pos_switch": 0, "i2_pos_switch": 0, "i5_light_barrier": 1, "m1_speed": -512, "o7_valve": 512, "o8_compressor": 0}}
+{"station": "OV_1", "timestamp": "2023-03-20T10:11:05Z", "events": {"i1_pos_switch": 1, "i2_pos_switch": 0, "i5_light_barrier": 1, "m1_speed": 0, "o7_valve": 512, "o8_compressor": 0}}
+{"station": "OV_1", "timestamp": "2023-03-20T10:11:07Z", "events": {"i1_pos_switch": 1, "i2_pos_switch": 0, "i5_light_barrier": 1, "m1_speed": 0, "o7_valve": 512, "o8_compressor": 0}}
+{"station": "OV_1", "timestamp": "2023-03-20T10:11:09Z", "events": {"i1_pos_switch": 1, "i2_pos_switch": 0, "i5_light_barrier": 1, "m1_speed": 0, "o7_valve": 0, "o8_compressor": 0}}
+{"station": "OV_1", "timestamp": "2023-03-20T10:11:11Z", "events": {"i1_pos_switch": 1, "i2_pos_switch": 0, "i5_light_barrier": 1, "m1_speed": 0, "o7_valve": 0, "o8_compressor": 0}}
+{"station": "OV_1", "timestamp": "2023-03-20T10:11:13Z", "events": {"i1_pos_switch": 1, "i2_pos_switch": 0, "i5_light_barrier": 1, "m1_speed": 0, "o7_valve": 0, "o8_compressor": 0}}
+{"station": "OV_1", "timestamp": "2023-03-20T10:11:15Z", "events": {"i1_pos_switch": 1, "i2_pos_switch": 0, "i5_light_barrier": 1, "m1_speed": 0, "o7_valve": 0, "o8_compressor": 0}}
+{"station": "OV_1", "timestamp": "2023-03-20T10:11:17Z", "events": {"i1_pos_switch": 1, "i2_pos_switch": 0, "i5_light_barrier": 1, "m1_speed": 0, "o7_valve": 0, "o8_compressor": 0}}
+{"station": "OV_1", "timestamp": "2023-03-20T10:11:19Z", "events": {"i1_pos_switch": 0, "i2_pos_switch": 0, "i5_light_barrier": 1, "m1_speed": 512, "o7_valve": 512, "o8_compressor": 0}}
+{"station": "OV_1", "timestamp": "2023-03-20T10:11:22Z", "events": {"i1_pos_switch": 0, "i2_pos_switch": 0, "i5_light_barrier": 1, "m1_speed": 512, "o7_valve": 512, "o8_compressor": 0}}
+{"station": "OV_1", "timestamp": "2023-03-20T10:11:24Z", "events": {"i1_pos_switch": 0, "i2_pos_switch": 1, "i5_light_barrier": 1, "m1_speed": 0, "o7_valve": 512, "o8_compressor": 0}}
+{"station": "OV_1", "timestamp": "2023-03-20T10:11:26Z", "events": {"i1_pos_switch": 0, "i2_pos_switch": 0, "i5_light_barrier": 1, "m1_speed": 0, "o7_valve": 0, "o8_compressor": 0}}

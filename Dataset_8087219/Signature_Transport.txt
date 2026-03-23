@@ -1,0 +1,17 @@
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:07Z", "events": {"i3_pos_switch": 0, "i4_pos_switch": 0, "m2_speed": 0, "o5_valve": 0, "o6_valve": 0, "o8_compressor": 0}}
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:09Z", "events": {"i3_pos_switch": 0, "i4_pos_switch": 0, "m2_speed": -512, "o5_valve": 0, "o6_valve": 0, "o8_compressor": 0}}
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:11Z", "events": {"i3_pos_switch": 0, "i4_pos_switch": 0, "m2_speed": -512, "o5_valve": 0, "o6_valve": 0, "o8_compressor": 0}}
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:13Z", "events": {"i3_pos_switch": 0, "i4_pos_switch": 0, "m2_speed": -512, "o5_valve": 0, "o6_valve": 0, "o8_compressor": 0}}
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:15Z", "events": {"i3_pos_switch": 0, "i4_pos_switch": 0, "m2_speed": -512, "o5_valve": 0, "o6_valve": 0, "o8_compressor": 0}}
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:17Z", "events": {"i3_pos_switch": 0, "i4_pos_switch": 0, "m2_speed": -512, "o5_valve": 0, "o6_valve": 0, "o8_compressor": 0}}
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:19Z", "events": {"i3_pos_switch": 1, "i4_pos_switch": 0, "m2_speed": 0, "o5_valve": 0, "o6_valve": 0, "o8_compressor": 0}}
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:21Z", "events": {"i3_pos_switch": 1, "i4_pos_switch": 0, "m2_speed": 0, "o5_valve": 0, "o6_valve": 0, "o8_compressor": 0}}
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:23Z", "events": {"i3_pos_switch": 1, "i4_pos_switch": 0, "m2_speed": 0, "o5_valve": 512, "o6_valve": 512, "o8_compressor": 0}}
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:25Z", "events": {"i3_pos_switch": 0, "i4_pos_switch": 0, "m2_speed": 512, "o5_valve": 512, "o6_valve": 0, "o8_compressor": 0}}
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:27Z", "events": {"i3_pos_switch": 0, "i4_pos_switch": 0, "m2_speed": 512, "o5_valve": 512, "o6_valve": 0, "o8_compressor": 0}}
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:29Z", "events": {"i3_pos_switch": 0, "i4_pos_switch": 0, "m2_speed": 512, "o5_valve": 512, "o6_valve": 0, "o8_compressor": 0}}
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:31Z", "events": {"i3_pos_switch": 0, "i4_pos_switch": 0, "m2_speed": 512, "o5_valve": 512, "o6_valve": 0, "o8_compressor": 0}}
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:33Z", "events": {"i3_pos_switch": 0, "i4_pos_switch": 0, "m2_speed": 512, "o5_valve": 512, "o6_valve": 0, "o8_compressor": 0}}
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:35Z", "events": {"i3_pos_switch": 0, "i4_pos_switch": 0, "m2_speed": 512, "o5_valve": 512, "o6_valve": 0, "o8_compressor": 0}}
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:37Z", "events": {"i3_pos_switch": 0, "i4_pos_switch": 0, "m2_speed": 512, "o5_valve": 512, "o6_valve": 0, "o8_compressor": 0}}
+{"station": "WT_1", "timestamp": "2023-03-20T10:57:39Z", "events": {"i3_pos_switch": 0, "i4_pos_switch": 0, "m2_speed": 0, "o5_valve": 0, "o6_valve": 0, "o8_compressor": 0}}
