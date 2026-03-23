@@ -10,10 +10,14 @@ Analizowany podzbior pochodzi z kolekcji danych o procesach przemyslowych (iOPT 
 - Storage
 - Transport
 
-W folderze znajduja sie:
+W projekcie znajduja sie:
 - pliki sygnatur (`Signature_*.txt`) z sekwencjami eventow JSON,
 - wizualizacje sygnatur (`Visual_Signature_*.png`),
 - aplikacje CEP/Siddhi (`Detect*App.siddhi`) mapujace wzorce sygnalowe na aktywnosci.
+
+Po uporzadkowaniu struktury repozytorium:
+- dane zrodlowe pozostaja w folderze `Dataset_8087219`,
+- artefakty analityczne i CEP sa w folderze `Artefakty_Projektu`.
 
 Kazdy event zawiera timestamp oraz zestaw sygnalow czujnikow i aktuatorow dla stacji (np. `OV_1`, `MM_1`, `SM_1`, `WT_1`, `VGR_1`, `HBW_1`).
 

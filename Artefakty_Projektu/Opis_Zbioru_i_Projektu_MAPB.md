@@ -30,6 +30,10 @@ W praktyce sa tu trzy typy artefaktow:
 - mapowanie sygnalow czujnikow/aktuatorow na aktywnosci procesowe,
 - publikowanie wykrytych zdarzen na MQTT.
 
+Aktualna organizacja repozytorium:
+- folder `Dataset_8087219` zawiera dane zrodlowe (`Signature_*.txt` i `Visual_Signature_*.png`),
+- folder `Artefakty_Projektu` zawiera notebook, raport i aplikacje CEP (`Detect*App.siddhi`).
+
 ## Jak to sie laczy z process mining
 
 Ten zbior jest dobry do przejscia od surowych sygnalow sterowania do logu procesowego:
